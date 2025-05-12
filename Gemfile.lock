@@ -117,6 +117,8 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
+    jwt (2.10.1)
+      base64
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -249,6 +251,7 @@ DEPENDENCIES
   dotenv-rails (~> 3.1)
   graphiql-rails
   graphql (~> 2.5)
+  jwt (~> 2.7)
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 7.1.5, >= 7.1.5.1)

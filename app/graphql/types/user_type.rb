@@ -13,6 +13,7 @@ module Types
     field :tickets, [Types::TicketType], null: true
     field :assigned_tickets, [Types::TicketType], null: true
     field :comments, [Types::CommentType], null: true
+    field :ticket_assignments, [Types::TicketAssignmentType], null: true
 
     # Simple direct resolvers
     def tickets
@@ -25,6 +26,10 @@ module Types
 
     def comments
       object.comments
+    end
+    
+    def ticket_assignments
+      object.ticket_assignments
     end
 
     # Helper method to get role as a string

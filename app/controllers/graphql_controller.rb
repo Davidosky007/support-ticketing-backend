@@ -4,7 +4,7 @@ class GraphqlController < ApplicationController
   # If accessing from outside this domain, nullify the session
   # This allows for outside API access while preventing CSRF attacks,
   # but you'll have to authenticate your user separately
-  protect_from_forgery with: :null_session
+  # protect_from_forgery with: :null_session
 
   def execute
     variables = prepare_variables(params[:variables])
@@ -36,9 +36,9 @@ class GraphqlController < ApplicationController
     return nil unless token
     
     # Temporary Development Override: Always return first agent for testing
-    if Rails.env.development? && params[:skip_auth] == 'true'
-      return User.find_by(email: 'agent1@example.com')
-    end
+    # if Rails.env.development? && params[:skip_auth] == 'true'
+    #   return User.find_by(email: 'agent1@example.com')
+    # end
     
     begin
       # Decode token

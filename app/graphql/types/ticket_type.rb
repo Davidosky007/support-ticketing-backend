@@ -15,6 +15,7 @@ module Types
     field :agent, Types::UserType, null: true
     field :comments, [Types::CommentType], null: true
     field :attachments, [Types::AttachmentType], null: true
+    field :ticket_assignments, [Types::TicketAssignmentType], null: true
     
     # Simple direct resolvers
     def comments
@@ -31,6 +32,10 @@ module Types
     
     def attachments
       object.attachments
+    end
+    
+    def ticket_assignments
+      object.ticket_assignments
     end
     
     # Helper method to get status as a string

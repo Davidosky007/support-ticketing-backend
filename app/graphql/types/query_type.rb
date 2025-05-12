@@ -35,22 +35,61 @@ module Types
       description: "Get a user by ID" do
       argument :id, ID, required: true
     end
-    
-    # Resolver methods
+
+    field :current_user, Types::UserType, null: true,
+      description: "Get the currently authenticated user"
+
+    # Secured resolver methods
     def tickets
+      # Check authentication
+      if context[:current_user].nil?
+        raise GraphQL::ExecutionError, "You need to be authenticated to access tickets"
+      end
+      
       Ticket.includes(:user, :agent, :comments)
     end
     
     def ticket(id:)
+      # Check authentication
+      if context[:current_user].nil?
+        raise GraphQL::ExecutionError, "You need to be authenticated to access ticket details"
+      end
+      
       Ticket.includes(:user, :agent, :comments).find_by(id: id)
     end
     
     def users
+      # Check authentication and role
+      user = context[:current_user]
+      if user.nil?
+        raise GraphQL::ExecutionError, "You need to be authenticated to access users"
+      end
+      
+      # Only agents can list all users
+      if user.role != 'agent'
+        raise GraphQL::ExecutionError, "Only agents can access user list"
+      end
+      
       User.includes(:tickets, :assigned_tickets, :comments)
     end
     
     def user(id:)
+      # Check authentication
+      user = context[:current_user]
+      if user.nil?
+        raise GraphQL::ExecutionError, "You need to be authenticated to access user details"
+      end
+      
+      # Users can only access their own profile unless they're agents
+      if user.role != 'agent' && user.id.to_s != id.to_s
+        raise GraphQL::ExecutionError, "You can only access your own user details"
+      end
+      
       User.includes(:tickets, :assigned_tickets, :comments).find_by(id: id)
+    end
+
+    def current_user
+      context[:current_user]
     end
 
     # Add root-level fields here.
