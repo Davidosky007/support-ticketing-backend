@@ -6,6 +6,9 @@ module Types
     field :login, mutation: Mutations::Login,
       description: "Login with email and password"
 
+    field :register, mutation: Mutations::Register,
+      description: "Register a new user account"
+
     field :create_comment, mutation: Mutations::CreateComment,
       description: "Create a new comment on a ticket"
 
