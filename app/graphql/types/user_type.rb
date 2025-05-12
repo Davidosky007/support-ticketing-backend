@@ -14,17 +14,17 @@ module Types
     field :assigned_tickets, [Types::TicketType], null: true
     field :comments, [Types::CommentType], null: true
 
-    # Add resolver methods for efficiency
+    # Simple direct resolvers
     def tickets
-      Loaders::AssociationLoader.for(User, :tickets).load(object)
+      object.tickets
     end
 
     def assigned_tickets
-      Loaders::AssociationLoader.for(User, :assigned_tickets).load(object)
+      object.assigned_tickets
     end
 
     def comments
-      Loaders::AssociationLoader.for(User, :comments).load(object)
+      object.comments
     end
 
     # Helper method to get role as a string

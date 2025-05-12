@@ -1,0 +1,86 @@
+# frozen_string_literal: true
+
+module Mutations
+  class GenerateTicketsCsv < Mutations::BaseMutation
+    argument :status, String, required: false, description: "Filter by ticket status (default: closed)"
+    argument :start_date, GraphQL::Types::ISO8601DateTime, required: false
+    argument :end_date, GraphQL::Types::ISO8601DateTime, required: false
+    
+    field :url, String, null: true
+    field :errors, [String], null: false
+
+    require 'csv'
+
+    def resolve(status: 'closed', start_date: 1.month.ago, end_date: Time.now)
+      # Get current user from context
+      user = context[:current_user]
+      
+      # Ensure user is authenticated
+      unless user
+        return {
+          url: nil,
+          errors: ["You must be logged in to export tickets"]
+        }
+      end
+      
+      # Ensure user has agent role
+      unless user.role.to_sym == :agent
+        return {
+          url: nil, 
+          errors: ["Only agents can export ticket data"]
+        }
+      end
+
+      # Query tickets with filters
+      tickets = Ticket.where(
+        status: status, 
+        updated_at: start_date..end_date
+      )
+      
+      # Generate CSV data
+      csv_data = CSV.generate(headers: true) do |csv|
+        csv << %w[id subject description status customer_email agent_email created_at updated_at]
+        
+        tickets.includes(:user, :agent).each do |ticket|
+          csv << [
+            ticket.id, 
+            ticket.subject,
+            ticket.description&.truncate(100), 
+            ticket.status, 
+            ticket.user&.email,
+            ticket.agent&.email,
+            ticket.created_at,
+            ticket.updated_at
+          ]
+        end
+      end
+      
+      # Generate unique filename
+      filename = "closed_tickets_#{Time.now.to_i}.csv"
+      filepath = Rails.root.join('tmp', filename)
+      
+      # Write to temporary file
+      File.open(filepath, 'w') { |file| file.write(csv_data) }
+      
+      # In a production, you would upload to cloud storage
+      # and return a signed URL. For development, we'll use a direct path.
+      if Rails.env.development?
+        download_url = "/downloads/#{filename}"
+        
+        # Store the file path in session for the download controller to retrieve
+        context[:session][:export_file] = filepath.to_s
+        
+        {
+          url: download_url,
+          errors: []
+        }
+      else
+        # Production implementation would upload to cloud and return signed URL
+        {
+          url: nil,
+          errors: ["CSV export not configured for production. Use S3 or similar storage."]
+        }
+      end
+    end
+  end
+end

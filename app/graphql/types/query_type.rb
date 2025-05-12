@@ -38,19 +38,19 @@ module Types
     
     # Resolver methods
     def tickets
-      Ticket.all
+      Ticket.includes(:user, :agent, :comments)
     end
     
     def ticket(id:)
-      Ticket.find_by(id: id)
+      Ticket.includes(:user, :agent, :comments).find_by(id: id)
     end
     
     def users
-      User.all
+      User.includes(:tickets, :assigned_tickets, :comments)
     end
     
     def user(id:)
-      User.find_by(id: id)
+      User.includes(:tickets, :assigned_tickets, :comments).find_by(id: id)
     end
 
     # Add root-level fields here.

@@ -47,7 +47,9 @@ group :development do
   # For GraphiQL interface
   gem 'graphiql-rails'
   gem 'sprockets-rails' 
+  gem 'bullet'
 end
+
 
 gem "graphql", "~> 2.5"
 

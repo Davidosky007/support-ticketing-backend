@@ -11,12 +11,13 @@ module Types
     field :user, Types::UserType, null: false
     field :ticket, Types::TicketType, null: false
     
+    # Simple direct resolvers
     def user
-      Loaders::RecordLoader.for(User).load(object.user_id)
+      object.user
     end
     
     def ticket
-      Loaders::RecordLoader.for(Ticket).load(object.ticket_id)
+      object.ticket
     end
   end
 end

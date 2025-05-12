@@ -16,18 +16,21 @@ module Types
     field :comments, [Types::CommentType], null: true
     field :attachments, [Types::AttachmentType], null: true
     
-    # Add resolver methods for efficiency
+    # Simple direct resolvers
     def comments
-      Loaders::AssociationLoader.for(Ticket, :comments).load(object)
+      object.comments
     end
     
     def customer
-      Loaders::RecordLoader.for(User).load(object.customer_id)
+      object.user
     end
     
     def agent
-      return nil unless object.agent_id
-      Loaders::RecordLoader.for(User).load(object.agent_id)
+      object.agent
+    end
+    
+    def attachments
+      object.attachments
     end
     
     # Helper method to get status as a string
