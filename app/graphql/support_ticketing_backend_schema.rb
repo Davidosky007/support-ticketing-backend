@@ -4,7 +4,7 @@ class SupportTicketingBackendSchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
+  # Enable dataloader for efficient association loading
   use GraphQL::Dataloader
 
   # GraphQL-Ruby calls this when something goes wrong while running a query:

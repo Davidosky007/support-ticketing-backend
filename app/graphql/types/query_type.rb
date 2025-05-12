@@ -18,14 +18,43 @@ module Types
       ids.map { |id| context.schema.object_from_id(id, context) }
     end
 
+    # Add ticket queries
+    field :tickets, [Types::TicketType], null: false,
+      description: "Get all tickets"
+    
+    field :ticket, Types::TicketType, null: true,
+      description: "Get a ticket by ID" do
+      argument :id, ID, required: true
+    end
+    
+    # Add user queries
+    field :users, [Types::UserType], null: false,
+      description: "Get all users"
+    
+    field :user, Types::UserType, null: true,
+      description: "Get a user by ID" do
+      argument :id, ID, required: true
+    end
+    
+    # Resolver methods
+    def tickets
+      Ticket.all
+    end
+    
+    def ticket(id:)
+      Ticket.find_by(id: id)
+    end
+    
+    def users
+      User.all
+    end
+    
+    def user(id:)
+      User.find_by(id: id)
+    end
+
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
-    # TODO: remove me
-    field :test_field, String, null: false,
-      description: "An example field added by the generator"
-    def test_field
-      "Hello World!"
-    end
   end
 end
