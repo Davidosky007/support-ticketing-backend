@@ -20,5 +20,8 @@ module Types
 
     field :generate_tickets_csv, mutation: Mutations::GenerateTicketsCsv,
       description: "Generate CSV export of tickets (agents only)"
+
+    field :upload_attachment, mutation: Mutations::UploadAttachment,
+      description: "Upload a file attachment to a ticket"
   end
 end
