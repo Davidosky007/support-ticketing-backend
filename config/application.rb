@@ -49,5 +49,12 @@ module SupportTicketingBackend
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # Add these lines for GraphiQL to work in Rails 7 API mode
+    if Rails.env.development?
+      config.middleware.use ActionDispatch::Cookies
+      config.middleware.use ActionDispatch::Session::CookieStore
+      config.middleware.use ActionDispatch::ContentSecurityPolicy::Middleware
+    end
   end
 end

@@ -43,8 +43,11 @@ end
 group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+  
+  # For GraphiQL interface
+  gem 'graphiql-rails'
+  gem 'sprockets-rails' 
 end
-
 
 gem "graphql", "~> 2.5"
 
