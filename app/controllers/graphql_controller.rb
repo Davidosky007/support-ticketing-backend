@@ -7,6 +7,17 @@ class GraphqlController < ApplicationController
   # protect_from_forgery with: :null_session
 
   def execute
+   # Add rate limiting for non-GET requests
+   if !request.get? && !Rails.env.development?
+    key = "graphql-#{request.ip}"
+    count = Rails.cache.increment(key, 1, expires_in: 1.minute)
+    
+    if count > 100 # Allow 100 requests per minute
+      render json: { errors: [{ message: "Rate limit exceeded" }] }, status: 429
+      return
+    end
+  end
+
     variables = prepare_variables(params[:variables])
     query = params[:query]
     operation_name = params[:operationName]
