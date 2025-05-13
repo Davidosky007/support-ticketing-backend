@@ -10,6 +10,9 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
+# Add this before RSpec.configure
+Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
@@ -45,6 +48,9 @@ RSpec.configure do |config|
 
   # Include FactoryBot methods
   config.include FactoryBot::Syntax::Methods
+
+  # Include ActiveSupport::Testing::TimeHelpers
+  config.include ActiveSupport::Testing::TimeHelpers
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false

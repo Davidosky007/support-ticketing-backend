@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Mutations
+  # Mutation for creating a comment on a ticket
   class CreateComment < Mutations::BaseMutation
     argument :ticket_id, ID, required: true
     argument :content, String, required: true
@@ -9,44 +10,64 @@ module Mutations
     field :errors, [String], null: false
 
     def resolve(ticket_id:, content:)
-      # Get current user from context
       user = context[:current_user]
       
-      # Ensure user is authenticated
-      unless user
-        return {
-          comment: nil,
-          errors: ["You must be logged in to create a comment"]
-        }
-      end
-      
-      # Ensure user has proper role
-      unless [:customer, :agent].include?(user.role.to_sym)
-        return {
-          comment: nil, 
-          errors: ["You are not authorized to perform this action"]
-        }
-      end
+      result = authenticate_user(user)
+      return result if result
 
-      # Find the ticket
+      result = validate_user_role(user)
+      return result if result
+
       ticket = Ticket.find_by(id: ticket_id)
       
-      unless ticket
-        return {
-          comment: nil,
-          errors: ["Ticket not found"]
-        }
-      end
+      result = validate_ticket(ticket)
+      return result if result
 
-      # Enforce comment restriction for customers
-      if user.customer? && !ticket.agent_commented
-        return {
-          comment: nil,
-          errors: ["You can only comment after an agent has responded"]
-        }
-      end
+      result = check_customer_permissions(user, ticket)
+      return result if result
 
-      # Create the comment
+      create_and_save_comment(ticket, user, content)
+    end
+
+    private
+
+    def authenticate_user(user)
+      return nil if user
+
+      {
+        comment: nil,
+        errors: ['You must be logged in to create a comment']
+      }
+    end
+
+    def validate_user_role(user)
+      return nil if %i[customer agent].include?(user.role.to_sym)
+
+      {
+        comment: nil,
+        errors: ['You are not authorized to perform this action']
+      }
+    end
+
+    def validate_ticket(ticket)
+      return nil if ticket
+
+      {
+        comment: nil,
+        errors: ['Ticket not found']
+      }
+    end
+
+    def check_customer_permissions(user, ticket)
+      return nil unless user.customer? && !ticket.agent_commented
+
+      {
+        comment: nil,
+        errors: ['Agent must comment first']
+      }
+    end
+
+    def create_and_save_comment(ticket, user, content)
       comment = Comment.new(
         ticket: ticket,
         user: user,

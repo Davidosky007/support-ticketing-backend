@@ -21,10 +21,8 @@ module Mutations
       
       # Ensure user has agent role
       unless user.role.to_sym == :agent
-        return {
-          ticket: nil, 
-          errors: ["Only agents can assign tickets"]
-        }
+        # This should raise a GraphQL error instead of returning normally
+        raise GraphQL::ExecutionError, "Only agents can assign tickets"
       end
 
       # Find the ticket

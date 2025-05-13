@@ -46,7 +46,13 @@ module Types
         raise GraphQL::ExecutionError, "You need to be authenticated to access tickets"
       end
       
-      Ticket.includes(:user, :agent, :comments)
+      user = context[:current_user]
+      if user.role == 'agent'
+        Ticket.includes(:user, :agent, :comments)
+      else
+        # Customers should only see their own tickets
+        Ticket.where(customer_id: user.id).includes(:user, :agent, :comments)
+      end
     end
     
     def ticket(id:)

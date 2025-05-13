@@ -44,6 +44,9 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'shoulda-matchers'
+
+  # Add SimpleCov
+  gem 'simplecov', require: false, group: :test
 end
 
 group :development do

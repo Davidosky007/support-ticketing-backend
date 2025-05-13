@@ -5,7 +5,7 @@ module Types
     field :id, ID, null: false
     field :name, String
     field :email, String
-    field :role, String # Changed from Integer to String for better client usage
+    field :role, String, null: false # Changed from Integer to String for better client usage
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
@@ -27,14 +27,14 @@ module Types
     def comments
       object.comments
     end
-    
+
     def ticket_assignments
       object.ticket_assignments
     end
 
     # Helper method to get role as a string
     def role
-      object.role.to_s
+      object.role.upcase
     end
   end
 end

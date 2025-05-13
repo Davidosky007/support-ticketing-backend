@@ -23,5 +23,8 @@ module Types
 
     field :upload_attachment, mutation: Mutations::UploadAttachment,
       description: "Upload a file attachment to a ticket"
+
+    field :update_ticket_status, mutation: Mutations::UpdateTicketStatus,
+      description: "Update a ticket's status (agent only)"
   end
 end
