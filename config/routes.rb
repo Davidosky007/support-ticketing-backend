@@ -8,5 +8,9 @@ Rails.application.routes.draw do
   end
 
   get 'up' => 'rails/health#show', as: :rails_health_check
+
+  # Route for downloading generated CSV files
+  get '/downloads/:filename', to: 'downloads_controller#show', as: :download_file
+
   # root "posts#index"
 end

@@ -10,29 +10,30 @@ class GraphqlController < ApplicationController
     variables = prepare_variables(params[:variables])
     query = params[:query]
     operation_name = params[:operationName]
-    
+
     # Add this authentication check before execution
     context = {
       current_user: current_user,
-      session: session
+      host_with_port: request.host_with_port
     }
-    
+
     # For unauthenticated requests that require authentication, provide a helpful error
     if requires_authentication?(query) && context[:current_user].nil?
-      render json: { errors: [{ message: "You must be authenticated to perform this action" }] }
+      render json: { errors: [{ message: 'You must be authenticated to perform this action' }] }
       return
     end
-    
+
     result = SupportTicketingBackendSchema.execute(
       query,
       variables: variables,
       context: context,
       operation_name: operation_name
     )
-    
+
     render json: result
   rescue StandardError => e
     raise e unless Rails.env.development? || Rails.env.test?
+
     handle_error_in_development(e)
   end
 
@@ -88,11 +89,11 @@ class GraphqlController < ApplicationController
   def requires_authentication?(query)
     # Skip auth check for introspection and login/register
     return false if query.nil?
-    return false if query.include?("IntrospectionQuery")
-    return false if query.include?("login") || query.include?("register")
-    
+    return false if query.include?('IntrospectionQuery')
+    return false if query.include?('login') || query.include?('register')
+
     # Otherwise require authentication for mutations and protected queries
-    query.include?("mutation") || query.include?("tickets")
+    query.include?('mutation') || query.include?('tickets')
   end
 
   def handle_error_in_development(e)
