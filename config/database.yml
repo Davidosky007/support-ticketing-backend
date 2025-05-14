@@ -80,7 +80,4 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
-  <<: *default
-  database: support_ticketing_backend_production
-  username: support_ticketing_backend
-  password: <%= ENV["SUPPORT_TICKETING_BACKEND_DATABASE_PASSWORD"] %>
+  url: <%= ENV['DATABASE_URL'] %>
