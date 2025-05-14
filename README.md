@@ -74,6 +74,76 @@ A robust GraphQL API backend for a support ticketing system built with Ruby on R
 
 6. The GraphQL API will be available at `http://localhost:3000/graphql`
 
+## Running with Docker
+
+You can run the application using Docker for easy setup and deployment.
+
+### Build the Docker image
+
+```bash
+docker build -t support-ticketing-backend .
+```
+
+### Run the application
+
+You need a PostgreSQL database running and accessible to the container. You can use Docker Compose or run Postgres separately.
+
+#### Example: Run with Docker Compose
+
+Create a `docker-compose.yml` file like:
+
+```yaml
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: support_ticketing
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    command: ./bin/rails server -b 0.0.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_HOST: db
+      DATABASE_NAME: support_ticketing
+      RAILS_ENV: development
+      # Add other environment variables as needed
+    depends_on:
+      - db
+    volumes:
+      - .:/rails
+
+volumes:
+  db_data:
+```
+
+Then run:
+
+```bash
+docker-compose up --build
+```
+
+The Rails app will be available at [http://localhost:3000](http://localhost:3000).
+
+### Environment Variables
+
+- You can use a `.env` file in the project root for environment variables (see the example in the **Installation** section).
+- Make sure to set `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_HOST`, and `DATABASE_NAME` for Docker.
+
+### Database Setup
+
+The entrypoint script will automatically run `rails db:prepare` on container startup, so migrations and setup are handled for you.
+
 ## Database Schema
 
 The application uses PostgreSQL with the following main tables:

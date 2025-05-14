@@ -1,23 +1,12 @@
 Rails.application.routes.draw do
-  post "/graphql", to: "graphql#execute"
-  
-  # Make sure to require the necessary files before mounting
+  post '/graphql', to: 'graphql#execute'
+
   if Rails.env.development?
-    # Add this line
     require 'graphiql/rails'
-    
-    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+    mount GraphiQL::Rails::Engine, at: '/graphiql', graphql_path: '/graphql'
+    get '/downloads/:filename', to: 'downloads#show', as: :download
   end
 
-  # Route for downloading exported files (development only)
-  get "/downloads/:filename", to: "downloads#show", as: :download if Rails.env.development?
-
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
-
-  # Defines the root path route ("/")
+  get 'up' => 'rails/health#show', as: :rails_health_check
   # root "posts#index"
 end
