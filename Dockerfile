@@ -51,11 +51,11 @@ RUN mkdir -p db log storage tmp && \
     useradd rails --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
     
+    # Make sure entrypoint is executable
 RUN chmod +x /rails/bin/docker-entrypoint
 
 USER rails:rails
 
-# Make sure entrypoint is executable
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
