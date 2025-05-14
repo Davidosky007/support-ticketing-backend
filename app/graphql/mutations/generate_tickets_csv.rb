@@ -61,16 +61,25 @@ module Mutations
         }
       end
 
-      # For non-test environments, handle the file as normal
+      # Create a unique filename
       filename = "tickets_#{Time.now.to_i}.csv"
-      filepath = Rails.root.join('tmp', filename)
 
-      # Write to temporary file
-      File.open(filepath, 'w') { |file| file.write(csv_data) }
+      # Store the CSV as an Active Storage blob
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: StringIO.new(csv_data),
+        filename: filename,
+        content_type: 'text/csv'
+      )
 
-      # Return download URL with proper host
+      # Generate a temporary URL that doesn't require authentication
+      temp_url = Rails.application.routes.url_helpers.rails_blob_url(
+        blob,
+        disposition: 'attachment',
+        host: context[:host_with_port] || ENV['APPLICATION_HOST'] || 'localhost:3000'
+      )
+
       {
-        url: Rails.application.routes.url_helpers.download_file_url(filename: filename, host: context[:host_with_port]),
+        url: temp_url,
         errors: []
       }
     end

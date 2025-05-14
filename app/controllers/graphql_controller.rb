@@ -15,6 +15,7 @@ class GraphqlController < ApplicationController
     context = {
       current_user: current_user,
       host_with_port: request.host_with_port
+      # other context values...
     }
 
     # For unauthenticated requests that require authentication, provide a helpful error

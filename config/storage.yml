@@ -9,10 +9,10 @@ local:
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3
-#   access_key_id: <%= Rails.application.credentials.dig(:aws, :access_key_id) %>
-#   secret_access_key: <%= Rails.application.credentials.dig(:aws, :secret_access_key) %>
-#   region: us-east-1
-#   bucket: your_own_bucket-<%= Rails.env %>
+#   access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+#   secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+#   region: <%= ENV['AWS_REGION'] %>
+#   bucket: <%= ENV['AWS_BUCKET'] %>
 
 # Remember not to checkin your GCS keyfile to a repository
 # google:
@@ -32,3 +32,34 @@ local:
 #   service: Mirror
 #   primary: local
 #   mirrors: [ amazon, google, microsoft ]
+
+# Local storage (not recommended for production but works for demos)
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+
+# # Firebase Storage (generous free tier)
+# firebase:
+#   service: Mirror
+#   primary: local
+#   mirrors:
+#     - service: GCS
+#       project: your-firebase-project
+#       credentials: <%= ENV['FIREBASE_CREDENTIALS'] %>
+#       bucket: your-firebase-bucket
+
+# Cloudinary (free tier with limited storage & bandwidth)
+cloudinary:
+  service: Cloudinary
+  cloud_name: <%= ENV['CLOUDINARY_CLOUD_NAME'] %>
+  api_key: <%= ENV['CLOUDINARY_API_KEY'] %>
+  api_secret: <%= ENV['CLOUDINARY_API_SECRET'] %>
+
+# # Backblaze B2 (extremely low cost, ~$0.005/GB)
+# backblaze:
+#   service: S3
+#   access_key_id: <%= ENV['BACKBLAZE_ACCESS_KEY_ID'] %>
+#   secret_access_key: <%= ENV['BACKBLAZE_SECRET_ACCESS_KEY'] %>
+#   endpoint: 'https://s3.us-west-002.backblazeb2.com'
+#   region: 'us-west-002'
+#   bucket: <%= ENV['BACKBLAZE_BUCKET'] %>
