@@ -71,8 +71,7 @@ A robust GraphQL API backend for a support ticketing system built with Ruby on R
    ```bash
    rails s
    ```
-
-6. The GraphQL API will be available at `http://localhost:3000/graphql`
+	1. The GraphQL API will be accessible at http://localhost:3000/graphql for local development and at https://support-ticketing-backend.onrender.com/graphql for the production environment.
 
 ## Running with Docker
 
