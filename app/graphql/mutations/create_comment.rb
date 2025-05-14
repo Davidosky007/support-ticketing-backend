@@ -11,7 +11,7 @@ module Mutations
 
     def resolve(ticket_id:, content:)
       user = context[:current_user]
-      
+
       result = authenticate_user(user)
       return result if result
 
@@ -19,7 +19,7 @@ module Mutations
       return result if result
 
       ticket = Ticket.find_by(id: ticket_id)
-      
+
       result = validate_ticket(ticket)
       return result if result
 
@@ -75,6 +75,7 @@ module Mutations
       )
 
       if comment.save
+        ticket.update(agent_commented: true) if user.agent?
         {
           comment: comment,
           errors: []
