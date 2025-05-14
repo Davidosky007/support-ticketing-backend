@@ -50,11 +50,12 @@ COPY --from=build /rails /rails
 RUN mkdir -p db log storage tmp && \
     useradd rails --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
+    
+RUN chmod +x /rails/bin/docker-entrypoint
 
 USER rails:rails
 
 # Make sure entrypoint is executable
-RUN chmod +x /rails/bin/docker-entrypoint
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
