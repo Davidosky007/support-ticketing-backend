@@ -35,6 +35,13 @@ gem 'bootsnap', require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem 'rack-cors'
 
+# Add AWS S3 SDK for ActiveStorage URL generation
+gem 'aws-sdk-s3', require: false
+
+# For Cloudinary in production
+gem 'cloudinary', require: false
+gem 'activestorage-cloudinary-service', require: false
+
 # Choose one of these based on your storage choice:
 
 

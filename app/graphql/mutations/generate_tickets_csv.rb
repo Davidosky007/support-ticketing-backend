@@ -71,15 +71,21 @@ module Mutations
         content_type: 'text/csv'
       )
 
-      # Generate a URL that doesn't require authentication and works cross-origin
-      service_url = blob.service_url(expires_in: 30.minutes, disposition: 'attachment')
+      # Generate a URL - use direct URL method for newer Rails versions
+      url = if blob.respond_to?(:service_url)
+              blob.service_url(expires_in: 30.minutes, disposition: 'attachment')
+            else
+              # Fallback for newer Rails versions
+              Rails.application.routes.url_helpers.rails_blob_path(blob, disposition: 'attachment', only_path: true)
+            end
 
       # For Render and other hosts that need absolute URLs
-      host = ENV['APPLICATION_HOST'] || context[:host_with_port] || 'localhost:3000'
-      url = if service_url.start_with?('http')
-              service_url
+      host = ENV['APPLICATION_HOST'] || context[:host_with_port] || 'support-ticketing-backend.onrender.com'
+      protocol = Rails.env.production? ? 'https' : 'http'
+      url = if url.start_with?('http')
+              url
             else
-              "#{request.protocol}#{host}#{service_url}"
+              "#{protocol}://#{host}#{url}"
             end
 
       {
