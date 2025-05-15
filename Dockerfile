@@ -7,16 +7,13 @@ FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
 # Rails app lives here
 WORKDIR /rails
 
-# Set production environment
+# Set production environment with more flexible configuration
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development" \
-    PORT="3000" \
-    WEB_CONCURRENCY="2" \
+    BUNDLE_WITHOUT="development:test" \
     RAILS_SERVE_STATIC_FILES="true" \
     RAILS_LOG_TO_STDOUT="true"
-
 
 # Throw-away build stage to reduce size of final image
 FROM base as build
@@ -37,7 +34,6 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
-
 # Final stage for app image
 FROM base
 
@@ -50,23 +46,16 @@ RUN apt-get update -qq && \
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /rails /rails
 
-# Ensure runtime directories exist and are owned by the rails user
-RUN mkdir -p db log storage tmp && \
-    useradd rails --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
+# Create runtime directories
+RUN mkdir -p db log storage tmp tmp/pids tmp/sockets tmp/csv_exports && \
+    chmod -R 777 tmp log db storage
 
-# Make all binstubs executable (including bin/rails and bin/docker-entrypoint)
+# Make all scripts executable
 RUN chmod +x /rails/bin/*
 
-USER rails:rails
-
-# Create and setup tmp directories that don't exist in the repo but are needed at runtime
-RUN mkdir -p tmp/pids tmp/sockets tmp/csv_exports && \
-    chmod -R 777 tmp
-
-# Entrypoint prepares the database.
+# Entrypoint script to setup the database
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start the server by default, this can be overwritten at runtime
+# Start the server
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
