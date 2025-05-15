@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'http://localhost:4200', 'https://support-ticketing-frontend.vercel.app/' # Update with your frontend app's URL
+    origins 'http://localhost:4200', 'https://support-ticketing-frontend.vercel.app'
 
     resource '*',
              headers: :any,
