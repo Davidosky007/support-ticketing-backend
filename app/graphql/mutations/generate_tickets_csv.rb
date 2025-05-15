@@ -29,23 +29,38 @@ module Mutations
         raise GraphQL::ExecutionError, 'Only agents can export ticket data'
       end
 
-      # Query tickets with filters
-      tickets = Ticket.where(
-        status: status,
-        updated_at: start_date..end_date
-      )
+      # Convert status to uppercase for comparison with DB values
+      status = status.upcase if status.is_a?(String)
+
+      # Add debugging to verify tickets are found
+      Rails.logger.info "Generating CSV for status: #{status}, date range: #{start_date} to #{end_date}"
+
+      # Query tickets with improved filters
+      tickets = Ticket.where(status: status)
+                      .where(created_at: start_date..end_date)
+
+      # Log how many tickets were found
+      Rails.logger.info "Found #{tickets.count} tickets matching the criteria"
+
+      # Return early with a helpful error if no tickets found
+      if tickets.empty?
+        return {
+          url: nil,
+          errors: ["No #{status.downcase} tickets found in the selected date range"]
+        }
+      end
 
       # Generate CSV data
       csv_data = CSV.generate(headers: true) do |csv|
         csv << %w[id subject description status customer_email agent_email created_at updated_at]
 
-        tickets.includes(:user, :agent).each do |ticket|
+        tickets.includes(:customer, :agent).each do |ticket|
           csv << [
             ticket.id,
             ticket.subject,
             ticket.description&.truncate(100),
             ticket.status,
-            ticket.user&.email,
+            ticket.customer&.email || 'Unknown',
             ticket.agent&.email,
             ticket.created_at,
             ticket.updated_at

@@ -39,11 +39,10 @@ gem 'rack-cors'
 gem 'aws-sdk-s3', require: false
 
 # For Cloudinary in production
-gem 'cloudinary', require: false
 gem 'activestorage-cloudinary-service', require: false
+gem 'cloudinary', require: false
 
 # Choose one of these based on your storage choice:
-
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
