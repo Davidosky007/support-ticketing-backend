@@ -1,43 +1,62 @@
 #!/bin/bash
 set -e
 
-# Wait for PostgreSQL to be available - Fix the pg_isready command
-function postgres_ready() {
-  # Debug: Print environment variables to help diagnose the issue
-  echo "Database connection settings:"
-  echo "DB_HOST=$DB_HOST"
-  echo "DB_PORT=$DB_PORT" 
-  echo "DB_USERNAME=$DB_USERNAME (length: ${#DB_USERNAME})"
-  
-  # Fixed check for empty username - only use -U if username is not empty string
-  if [ -n "$DB_USERNAME" ] && [ "$DB_USERNAME" != "" ]; then
-    echo "Using username for pg_isready: $DB_USERNAME"
-    pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME"
-  else
-    echo "No username provided, connecting without -U flag"
-    pg_isready -h "$DB_HOST" -p "$DB_PORT"
-  fi
-}
-
-until postgres_ready; do
-  echo >&2 "Waiting for PostgreSQL to become available..."
-  sleep 2
-done
-echo >&2 "PostgreSQL is ready!"
+# Create necessary directories
+mkdir -p /rails/tmp/pids /rails/tmp/csv_exports /rails/log
+chmod -R 777 /rails/tmp /rails/log
 
 # Remove a potentially pre-existing server.pid for Rails
 rm -f /rails/tmp/pids/server.pid
 
-# Create the database if it doesn't exist
-if bundle exec rails db:exists; then
-  echo "Database exists, running migrations..."
+# Check if DATABASE_URL is provided - skips DB checks if not available
+if [ -n "$DATABASE_URL" ]; then
+  echo "Using DATABASE_URL from environment"
+  export DATABASE_URL="$DATABASE_URL"
+  
+  # Try connecting to PostgreSQL but with timeout
+  ATTEMPTS=0
+  MAX_ATTEMPTS=5
+  
+  until pg_isready -d "$DATABASE_URL" || [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; do
+    echo >&2 "Waiting for PostgreSQL to become available (attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS)..."
+    ATTEMPTS=$((ATTEMPTS+1))
+    sleep 3
+  done
+  
+  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+    echo >&2 "PostgreSQL is ready!"
+    # Setup database
+    echo "Running database migrations..."
+    bundle exec rails db:migrate
+  else
+    echo >&2 "WARNING: PostgreSQL not available after $MAX_ATTEMPTS attempts. Starting app anyway."
+  fi
+# Check if we have individual DB connection params
+elif [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ] && [ -n "$DB_USERNAME" ]; then
+  echo "Using individual connection parameters"
+  
+  # Try connecting to PostgreSQL but with timeout
+  ATTEMPTS=0
+  MAX_ATTEMPTS=5
+  
+  until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" || [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; do
+    echo >&2 "Waiting for PostgreSQL to become available (attempt $((ATTEMPTS+1))/$MAX_ATTEMPTS)..."
+    ATTEMPTS=$((ATTEMPTS+1))
+    sleep 3
+  done
+  
+  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+    echo >&2 "PostgreSQL is ready!"
+    # Setup database
+    echo "Running database migrations..."
+    bundle exec rails db:migrate
+  else
+    echo >&2 "WARNING: PostgreSQL not available after $MAX_ATTEMPTS attempts. Starting app anyway."
+  fi
 else
-  echo "Database doesn't exist, creating and seeding..."
-  bundle exec rails db:prepare
+  echo "WARNING: No database connection information provided. Skipping database setup."
+  echo "The application will start but may not function correctly without a database."
 fi
 
-# Run pending migrations
-bundle exec rails db:migrate
-
-# Then exec the container's main process (what's set as CMD in the Dockerfile)
+# Then exec the container's main process
 exec "$@"
