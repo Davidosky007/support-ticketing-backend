@@ -1,9 +1,22 @@
 #!/bin/bash
 set -e
 
-# Wait for PostgreSQL to be available
+# Wait for PostgreSQL to be available - Fix the pg_isready command
 function postgres_ready() {
-  pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME
+  # Debug: Print environment variables to help diagnose the issue
+  echo "Database connection settings:"
+  echo "DB_HOST=$DB_HOST"
+  echo "DB_PORT=$DB_PORT" 
+  echo "DB_USERNAME=$DB_USERNAME (length: ${#DB_USERNAME})"
+  
+  # Fixed check for empty username - only use -U if username is not empty string
+  if [ -n "$DB_USERNAME" ] && [ "$DB_USERNAME" != "" ]; then
+    echo "Using username for pg_isready: $DB_USERNAME"
+    pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME"
+  else
+    echo "No username provided, connecting without -U flag"
+    pg_isready -h "$DB_HOST" -p "$DB_PORT"
+  fi
 }
 
 until postgres_ready; do
