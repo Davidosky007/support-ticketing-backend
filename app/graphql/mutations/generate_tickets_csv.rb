@@ -64,22 +64,26 @@ module Mutations
       # Create a unique filename
       filename = "tickets_#{Time.now.to_i}.csv"
 
-      # Store the CSV as an Active Storage blob
+      # Store the CSV as an Active Storage blob with public access
       blob = ActiveStorage::Blob.create_and_upload!(
         io: StringIO.new(csv_data),
         filename: filename,
         content_type: 'text/csv'
       )
 
-      # Generate a temporary URL that doesn't require authentication
-      temp_url = Rails.application.routes.url_helpers.rails_blob_url(
-        blob,
-        disposition: 'attachment',
-        host: context[:host_with_port] || ENV['APPLICATION_HOST'] || 'localhost:3000'
-      )
+      # Generate a URL that doesn't require authentication and works cross-origin
+      service_url = blob.service_url(expires_in: 30.minutes, disposition: 'attachment')
+      
+      # For Render and other hosts that need absolute URLs
+      host = ENV['APPLICATION_HOST'] || context[:host_with_port] || 'localhost:3000'
+      url = if service_url.start_with?('http')
+              service_url
+            else
+              "#{request.protocol}#{host}#{service_url}"
+            end
 
       {
-        url: temp_url,
+        url: url,
         errors: []
       }
     end
