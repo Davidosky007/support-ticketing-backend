@@ -54,13 +54,14 @@ module Mutations
       csv_data = CSV.generate(headers: true) do |csv|
         csv << %w[id subject description status customer_email agent_email created_at updated_at]
 
-        tickets.includes(:customer, :agent).each do |ticket|
+        # Change :customer to :user to match your model associations
+        tickets.includes(:user, :agent).each do |ticket|
           csv << [
             ticket.id,
             ticket.subject,
             ticket.description&.truncate(100),
             ticket.status,
-            ticket.customer&.email || 'Unknown',
+            ticket.user&.email || 'Unknown', # Change customer to user
             ticket.agent&.email,
             ticket.created_at,
             ticket.updated_at
