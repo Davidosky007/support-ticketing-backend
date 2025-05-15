@@ -37,15 +37,6 @@ gem 'rack-cors'
 
 # Choose one of these based on your storage choice:
 
-# For Firebase Storage
-gem 'google-cloud-storage', require: false
-
-# For Cloudinary
-gem 'activestorage-cloudinary-service', require: false
-gem 'cloudinary', require: false
-
-# For Backblaze B2 (uses AWS S3 compatible API)
-gem 'aws-sdk-s3', require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

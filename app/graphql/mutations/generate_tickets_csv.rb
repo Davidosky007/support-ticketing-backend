@@ -73,7 +73,7 @@ module Mutations
 
       # Generate a URL that doesn't require authentication and works cross-origin
       service_url = blob.service_url(expires_in: 30.minutes, disposition: 'attachment')
-      
+
       # For Render and other hosts that need absolute URLs
       host = ENV['APPLICATION_HOST'] || context[:host_with_port] || 'localhost:3000'
       url = if service_url.start_with?('http')

@@ -29,11 +29,11 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
-  # Store uploaded files on Cloudinary
-  config.active_storage.service = :cloudinary
+  # Just use local storage for now
+  config.active_storage.service = :local
 
-  # Set URL expiration for secure file access
-  config.active_storage.service_urls_expire_in = 1.hour
+  # Comment out this line temporarilye access
+  # config.active_storage.service_urls_expire_in = 1.hour
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
