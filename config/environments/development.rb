@@ -1,4 +1,4 @@
-require "active_support/core_ext/integer/time"
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -19,10 +19,10 @@ Rails.application.configure do
 
   # Enable/disable caching. By default caching is disabled.
   # Run rails dev:cache to toggle caching.
-  if Rails.root.join("tmp/caching-dev.txt").exist?
+  if Rails.root.join('tmp/caching-dev.txt').exist?
     config.cache_store = :memory_store
     config.public_file_server.headers = {
-      "Cache-Control" => "public, max-age=#{2.days.to_i}"
+      'Cache-Control' => "public, max-age=#{2.days.to_i}"
     }
   else
     config.action_controller.perform_caching = false
@@ -37,6 +37,26 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = false
 
   config.action_mailer.perform_caching = false
+
+  # Configure email settings with better debugging
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+
+  # Add detailed SMTP logging
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch('SMTP_SERVER', 'smtp.gmail.com'),
+    port: ENV.fetch('SMTP_PORT', 587).to_i,
+    domain: ENV.fetch('SMTP_DOMAIN', 'localhost'),
+    user_name: ENV.fetch('SMTP_USERNAME', nil),
+    password: ENV.fetch('SMTP_PASSWORD', nil),
+    authentication: ENV.fetch('SMTP_AUTHENTICATION', 'plain').to_sym,
+    enable_starttls_auto: true,
+    open_timeout: 5,
+    read_timeout: 5,
+    debug: ENV.fetch('SMTP_DEBUG', 'false') == 'true'
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -56,7 +76,6 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
-
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
@@ -69,9 +88,9 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
   config.after_initialize do
-          Bullet.enable = true
-          Bullet.alert = true # Optional: Enable alerts for browser display
-          Bullet.rails_logger = true # Optional: Enable Rails logger output
-          Bullet.console = true # Optional: Enable console output
+    Bullet.enable = true
+    Bullet.alert = true # Optional: Enable alerts for browser display
+    Bullet.rails_logger = true # Optional: Enable Rails logger output
+    Bullet.console = true # Optional: Enable console output
   end
 end

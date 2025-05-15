@@ -11,7 +11,11 @@ WORKDIR /rails
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_WITHOUT="development" \
+    PORT="3000" \
+    WEB_CONCURRENCY="2" \
+    RAILS_SERVE_STATIC_FILES="true" \
+    RAILS_LOG_TO_STDOUT="true"
 
 
 # Throw-away build stage to reduce size of final image
@@ -56,9 +60,13 @@ RUN chmod +x /rails/bin/*
 
 USER rails:rails
 
+# Create and setup tmp directories that don't exist in the repo but are needed at runtime
+RUN mkdir -p tmp/pids tmp/sockets tmp/csv_exports && \
+    chmod -R 777 tmp
+
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["./bin/rails", "server"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0"]

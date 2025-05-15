@@ -23,7 +23,23 @@ class DownloadsController < ApplicationController
     end
   end
 
+  # Method to manually trigger daily email reminders
+  def send_daily_emails
+    # Call the mailer directly
+    result = TicketMailer.send_open_ticket_reminders
 
+    render json: {
+      status: 'Success',
+      message: 'Daily reminder emails have been sent',
+      details: result
+    }
+  rescue StandardError => e
+    Rails.logger.error("Email sending error: #{e.class} - #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
 
- 
+    render json: {
+      error: 'Failed to send emails',
+      message: e.message
+    }, status: 500
+  end
 end

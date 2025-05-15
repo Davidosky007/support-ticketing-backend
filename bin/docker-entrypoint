@@ -1,8 +1,30 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
 
-# If running the rails server then create or migrate existing database
-if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  ./bin/rails db:prepare
+# Wait for PostgreSQL to be available
+function postgres_ready() {
+  pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME
+}
+
+until postgres_ready; do
+  echo >&2 "Waiting for PostgreSQL to become available..."
+  sleep 2
+done
+echo >&2 "PostgreSQL is ready!"
+
+# Remove a potentially pre-existing server.pid for Rails
+rm -f /rails/tmp/pids/server.pid
+
+# Create the database if it doesn't exist
+if bundle exec rails db:exists; then
+  echo "Database exists, running migrations..."
+else
+  echo "Database doesn't exist, creating and seeding..."
+  bundle exec rails db:prepare
 fi
 
-exec "${@}"
+# Run pending migrations
+bundle exec rails db:migrate
+
+# Then exec the container's main process (what's set as CMD in the Dockerfile)
+exec "$@"

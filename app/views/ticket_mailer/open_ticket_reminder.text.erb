@@ -1,0 +1,17 @@
+Daily Ticket Reminder
+=====================
+
+Hello,
+
+This is your daily reminder for open tickets that require attention as of <%= @date %>.
+
+You currently have <%= @tickets.count %> open tickets:
+
+<% @tickets.each do |ticket| %>
+- Ticket #<%= ticket.id %>: <%= ticket.subject %> (Customer: <%= User.find_by(id: ticket.customer_id)&.email || "Unknown" %>)
+<% end %>
+
+Please review and update these tickets as soon as possible.
+
+Thank you,
+Support Ticketing System
