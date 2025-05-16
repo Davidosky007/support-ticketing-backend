@@ -1,22 +1,32 @@
 namespace :tickets do
-  desc 'Send daily email reminders to agents with open tickets'
+  desc "Send daily email reminders for open tickets"
   task send_open_ticket_reminders: :environment do
-    puts "Starting to send ticket reminders to agents..."
+    puts "Starting to send open ticket reminders at #{Time.now}"
+    Rails.logger.info "Starting to send open ticket reminders"
     
-    # Find all agents
-    User.where(role: :agent).find_each do |agent|
-      # Find open tickets assigned to the agent
-      open_tickets = Ticket.where(agent: agent, status: :open)
-      
-      # Only send email if there are open tickets
-      if open_tickets.any?
-        puts "Sending reminder to #{agent.email} for #{open_tickets.count} open tickets"
-        TicketMailer.daily_open_ticket_summary(agent, open_tickets).deliver_now
-      else
-        puts "No open tickets for #{agent.email}, skipping..."
-      end
+    begin
+      result = TicketMailer.send_open_ticket_reminders
+      puts "Successfully sent reminders: #{result}"
+    rescue => e
+      puts "Error sending reminders: #{e.message}"
+      puts e.backtrace.join("\n")
+      raise e # Re-raise to ensure whenever gem sees the failure
     end
     
-    puts "Finished sending ticket reminders."
+    puts "Completed sending open ticket reminders at #{Time.now}"
+    Rails.logger.info "Completed sending open ticket reminders"
+  end
+
+  desc "Run open ticket reminders manually (for testing)"
+  task test_open_ticket_reminders: :environment do
+    puts "🧪 TESTING MODE: Sending open ticket reminders..."
+    
+    # Override email recipient for testing
+    ENV['MAILER_TEST_RECIPIENT'] = ENV.fetch('TEST_EMAIL', 'your-email@example.com')
+    
+    # Run the regular task
+    Rake::Task['tickets:send_open_ticket_reminders'].invoke
+    
+    puts "Testing complete. Emails would have been sent to: #{ENV['MAILER_TEST_RECIPIENT']}"
   end
 end

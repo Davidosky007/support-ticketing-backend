@@ -27,26 +27,29 @@ class TicketMailer < ApplicationMailer
   end
 
   def self.send_open_ticket_reminders
-    # Find all agents with assigned tickets
+    # Find all agents
     agents = User.where(role: 'agent').to_a
     sent_count = 0
-
+    
+    # Get all open tickets once
+    all_open_tickets = Ticket.where(status: :open)
+    
+    # Exit early if no open tickets
+    return "No open tickets to send reminders for" unless all_open_tickets.any?
+    
+    # Send the same list of all open tickets to each agent
     agents.each do |agent|
-      # Find open tickets for this agent
-      open_tickets = Ticket.where(agent_id: agent.id, status: 'OPEN')
-
-      next unless open_tickets.any?
-
-      # Send reminder only if agent has open tickets
-      open_ticket_reminder(agent.email, open_tickets).deliver_now
-      sent_count += 1
-      Rails.logger.info("Sent reminder to #{agent.email} for #{open_tickets.count} open tickets")
+      begin
+        open_ticket_reminder(agent.email, all_open_tickets).deliver_now
+        sent_count += 1
+        Rails.logger.info("Sent reminder to #{agent.email} for #{all_open_tickets.count} open tickets")
+      rescue => e
+        Rails.logger.error("❌ Failed to send email to #{agent.email}: #{e.message}")
+      end
     end
 
-    # Send summary to admin
+    # Still send summary to admin
     admin_email = ENV['DEFAULT_EMAIL_RECIPIENT'] || 'davidbassey428@gmail.com'
-    all_open_tickets = Ticket.where(status: 'OPEN')
-
     open_ticket_reminder(admin_email, all_open_tickets).deliver_now
 
     "Sent #{sent_count} agent reminders and 1 admin summary. Total open tickets: #{all_open_tickets.count}"

@@ -14,5 +14,11 @@ Rails.application.routes.draw do
   # Route for manually triggering daily emails
   post '/send_daily_emails', to: 'downloads#send_daily_emails'
 
+  namespace :api do
+    namespace :v1 do
+      post 'admin/trigger_daily_emails', to: 'admin#trigger_daily_emails'
+    end
+  end
+
   # root "posts#index"
 end
