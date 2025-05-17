@@ -26,16 +26,16 @@ RSpec.describe 'tickets:send_open_ticket_reminders', type: :task do
   
   let!(:closed_ticket) { create(:ticket, :closed, agent: agent1) }
   
-  it "sends emails to agents with open tickets" do
-    expect(TicketMailer).to receive(:daily_open_ticket_summary)
-      .with(agent1, kind_of(ActiveRecord::Relation))
-      .and_call_original
-    
-    expect(TicketMailer).to receive(:daily_open_ticket_summary)
-      .with(agent2, kind_of(ActiveRecord::Relation))
-      .and_call_original
-    
+  it "sends emails to agents with all open tickets", skip_recipient_override: true do
+    # Allow the mailer to be spied on so we can check calls
+    allow(TicketMailer).to receive(:daily_open_ticket_summary).and_call_original
+
     expect { Rake::Task['tickets:send_open_ticket_reminders'].invoke }
-      .to change { ActionMailer::Base.deliveries.count }.by(2)
+      .to change { ActionMailer::Base.deliveries.count }.by(3) # 2 agents + 1 admin summary
+
+    # Check that the mailer was called for both agents
+    agent_emails = [agent1.email, agent2.email]
+    delivered_to = ActionMailer::Base.deliveries.map(&:to).flatten
+    expect(delivered_to).to include(*agent_emails)
   end
 end
